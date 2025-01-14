@@ -1,0 +1,146 @@
+Classes
+    Barbarian; Str
+    Skill Proficiencies; Choose 2: Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival
+        Path of the Berserker
+        Path of the Wild Heart
+        Path of the World Tree
+        Path of the Zealot
+    Bard; Chr
+    Skill Proficiencies: Choose any 3
+        College of Dance
+        College of Glamour
+        College of Lore
+        College of Valor
+    Cleric; Wis
+    Skill Proficiencies; Choose 2: History, Insight, Medicine, Persuasion, or Religion
+        Life Domain
+        Light Domain
+        Trickery Domain
+        War Domain
+    Druid; Wis
+    Skill Proficiencies; Choose 2: Arcana, Animal Handling, Insight, Medicine, Nature, Perception, Religion, or Survival
+        Circle of the Land
+        Circle of the Moon
+        Circle of the Sea
+        Circle of the Stars
+    Fighter; Str or Dex
+    Skill Proficiencies; Choose 2: Acrobatics, Animal Handling, Athletics, History, Insight, Intimidation, Persuasion, Perception, or Survival
+        Battle Master
+        Champion
+        Eldritch Knight
+        Psi Warrior
+    Monk; Dex and Wis
+    Skill Proficiencies; Choose 2: Acrobatics, Athletics, History, Insight, Religion, or Stealth
+        Warrior of Mercy
+        Warrior of Shadow
+        Warrior of the Elements
+        Warrior of the Open Hand
+    Paladin; Str and Chr
+    Skill Proficiencies; Choose 2: Athletics, Insight, Intimidation, Medicine, Persuasion, or Religion
+        Oath of Devotion
+        Oath of Glory
+        Oath of the Ancients
+        Oath of Vengeance
+    Ranger; Dex and Wis
+    Skill Proficiencies; Choose 3: Animal Handling, Athletics, Insight, Investigation, Nature, Perception, Stealth, or Survival
+        Beast Master
+        Fey Wanderer
+        Gloom Stalker
+        Hunter
+    Rogue; Dex
+    Skill Proficiencies; Choose 4: Acrobatics, Athletics, Deception, Insight, Intimidation, Investigation, Perception, Persuasion, Sleight of Hand, or Stealth
+        Arcane Trickster
+        Assassin
+        Soulknife
+        Thief
+    Sorcerer; Chr
+    Skill Proficiencies; Choose 2: Arcana, Deception, Insight, Intimidation, Persuasion, or Religion
+        Aberrant Sorcery
+        Clockwork Sorcery
+        Draconic Sorcery
+        Wild Magic Sorcery
+    Warlock; Chr
+    Skill Proficiencies; Choose 2: Arcana, Deception, History, Intimidation, Investigation, Nature, or Religion
+        Archfey Patron
+        Celestial Patron
+        Fiend Patron
+        Great Old One Patron
+    Wizard; Int
+    Skill Proficiencies; Choose 2: Arcana, History, Insight, Investigation, Medicine, Nature, or Religion
+        Abjurer
+        Diviner
+        Evoker
+        Illusionist
+
+
+Strength	    Artisan, Entertainer, Farmer, Guard, Noble, Sailor, Soldier
+Dexterity	    Artisan, Charlatan, Criminal, Entertainer, Guide, Sailor, Scribe, Soldier, Wayfarer
+Constitution	Charlatan, Criminal, Farmer, Guide, Hermit, Merchant, Sage, Soldier
+Intelligence	Acolyte, Artisan, Criminal, Guard, Merchant, Noble, Sage, Scribe
+Wisdom	        Acolyte, Farmer, Guard, Guide, Hermit, Sage, Sailor, Scribe, Wayfarer
+Charisma	    Acolyte, Charlatan, Entertainer, Hermit, Merchant, Noble, Wayfarer
+
+Acolyte;
+    Abil: Int, Wis, Chr
+    Skills: Insight, Religion
+    Origin Feat: Magic Initiate
+Artisan;
+    Abil: Str, Dex, Int
+    Skills: Investigation, Persuasion
+    Origin Feat: Crafter
+Charlatan;
+    Abil: Dex, Con, Chr
+    Skills: Deception, Sleight of Hand
+    Origin Feat: Skilled
+Criminal;
+    Abil: Dex, Con, Int
+    Skills: Sleight of Hand, Stealth
+    Origin Feat: Alert
+Entertainer;
+    Abil: Str, Dex, Chr
+    Skills: Acrobatics, Performance
+    Origin Feat: Musician
+Farmer;
+    Abil: Str, Con, Wis
+    Skills: Animal Handling, Nature
+    Origin Feat: Tough
+Guard;
+    Abil: Str, Int, Wis
+    Skills: Athletics, Perception
+    Origin Feat: Alert
+Guide;
+    Abil: Dex, Con, Wis
+    Skills: Stealth, Survival
+    Origin Feat: Magic Initiate
+Hermit;
+    Abil: Con, Wis, Chr
+    Skills: Medicine, Religion
+    Origin Feat: Healer
+Merchant;
+    Abil: Con, Int, Chr
+    Skills: Animal Handling, Persuasion
+    Origin Feat: Lucky
+Noble;
+    Abil: Str, Int, Chr
+    Skills: History, Persuasion
+    Origin Feat: Skilled
+Sage;
+    Abil: Con, Int, Wis
+    Skills: Arcana, History
+    Origin Feat: Magic Initiate
+Sailor;
+    Abil: Str, Dex, Wis
+    Skills: Acrobatics, Perception
+    Origin Feat: Tavern Brawler
+Scribe;
+    Abil: Dex, Int, Wis
+    Skills: Investigation, Perception
+    Origin Feat: Skilled
+Soldier;
+    Abil: Str, Dex, Con
+    Skills: Athletics, Intimidation
+    Origin Feat: Savage Attacker
+Wayfarer;
+    Abil: Dex, Wis, Chr
+    Skills: Insight, Stealth
+    Origin Feat: Lucky
