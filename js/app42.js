@@ -28,7 +28,7 @@
 
 var startXML = '<?xml version="1.0" encoding="utf-8"?>\n';
 startXML +=
-  '<root version="4.5" dataversion="20230911" release="8.1|CoreRPG:6">\n';
+  '<root version="4.6" dataversion="20241002" release="8.1|CoreRPG:6">\n';
 startXML += "\t<character>\n";
 
 var endXML = "\t</character>\n";
@@ -351,6 +351,12 @@ var wisdomProficiency = 0;
 // Global variables used for various sections
 var thisIteration = 0;
 var pcFilename = "";
+var numArrows = 0;
+var numNeedles = 0;
+var numBolts = 0;
+var numBullets = 0;
+var walkSpeed = 0;
+var addSpeed = 0;
 
 const simpleMeleeWeapon = [
     "club",
@@ -1541,6 +1547,21 @@ function parseCharacter(inputChar) {
   buildXML += '\t\t\t<total type="number">' + totalHP + "</total>\n";
   buildXML += "\t\t</hp>\n";
 
+  character.race.racialTraits.some(function (fleet_trait, i) {
+    if (
+      fleet_trait.definition.name == "Fleet of Foot" ||
+      fleet_trait.definition.name == "Swift"
+    ) {
+      addSpeed += 5;
+    }
+  });
+  walkSpeed = parseInt(character.race.weightSpeeds.normal.walk) + addSpeed;
+  buildXML += "\t\t<speed>\n";
+  buildXML += '\t\t\t<base type="number">' + parseInt(walkSpeed) + "</base>\n";
+  buildXML +=
+    '\t\t\t<total type="number">' + parseInt(walkSpeed) + "</total>\n";
+  buildXML += "\t\t</speed>\n";
+
   /* * * * Start of Inventory * * * */
   buildXML += "\t\t<inventorylist>\n";
   const inventory = character.inventory;
@@ -1748,7 +1769,7 @@ function parseCharacter(inputChar) {
         weaponName.push(item.definition.name);
         weaponProperties.push(thisProperties);
         if (thisProperties.includes("Finesse")) {
-          if (strScore >= dexScore) {
+          if (strengthScore >= dexterityScore) {
             weaponBase.push("strength");
           } else {
             weaponBase.push("dexterity");
