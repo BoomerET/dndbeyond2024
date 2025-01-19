@@ -357,6 +357,8 @@ var numBolts = 0;
 var numBullets = 0;
 var walkSpeed = 0;
 var addSpeed = 0;
+var charAlign = "";
+var hasAppear = 0;
 
 const simpleMeleeWeapon = [
     "club",
@@ -1327,6 +1329,40 @@ function parseCharacter(inputChar) {
   if (character.weight != null)
     buildXML += '\t\t<weight type="string">' + character.weight + "</weight>\n";
 
+  switch (character.alignmentId) {
+    case 1:
+      charAlign = "Lawful Good";
+      break;
+    case 2:
+      charAlign = "Neutral Good";
+      break;
+    case 3:
+      charAlign = "Chaotic Good";
+      break;
+    case 4:
+      charAlign = "Lawful Neutral";
+      break;
+    case 5:
+      charAlign = "Neutral";
+      break;
+    case 6:
+      charAlign = "Chaotic Neutral";
+      break;
+    case 7:
+      charAlign = "Lawful Evil";
+      break;
+    case 8:
+      charAlign = "Neutral Evil";
+      break;
+    case 9:
+      charAlign = "Chaotic Evil";
+      break;
+    default:
+      charAlign = "None Selected";
+  }
+
+  buildXML += '\t\t<alignment type="string">' + charAlign + "</alignment>\n";
+
   // Proficiency Bonus
   switch (totalClassLevels) {
     case 1:
@@ -1547,12 +1583,25 @@ function parseCharacter(inputChar) {
   buildXML += '\t\t\t<total type="number">' + totalHP + "</total>\n";
   buildXML += "\t\t</hp>\n";
 
-  character.race.racialTraits.some(function (fleet_trait, i) {
+  character.race.racialTraits.some(function (racial_trait, i) {
     if (
-      fleet_trait.definition.name == "Fleet of Foot" ||
-      fleet_trait.definition.name == "Swift"
+      racial_trait.definition.name == "Fleet of Foot" ||
+      racial_trait.definition.name == "Swift"
     ) {
       addSpeed += 5;
+    }
+    if (racial_trait.definition.name == "Size") {
+      // Let's figure out the characters size, it's a string: "Your size is XX."
+      if (racial_trait.definition.snippet.includes("Small")) {
+        buildXML += '\t\t<size type="string">Small</size>\n';
+      } else if (racial_trait.definition.snippet.includes("Medium")) {
+        buildXML += '\t\t<size type="string">Medium</size>\n';
+      } else if (racial_trait.definition.snippet.includes("Large")) {
+        buildXML += '\t\t<size type="string">Large</size>\n';
+      } else {
+        buildXML += '\t\t<size type="string">Unknown</size>\n';
+      }
+      
     }
   });
   walkSpeed = parseInt(character.race.weightSpeeds.normal.walk) + addSpeed;
@@ -1971,6 +2020,211 @@ function parseCharacter(inputChar) {
     });
   buildXML += "\t\t</inventorylist>\n";
   /* * * * End of Inventory * * * */
+
+  /* * * * Start of Weaponlist * * * */
+  buildXML += "\t\t<weaponlist>\n";
+    var weaponCount = 0;
+    var thrownCount = 0;
+    for (x = 0; x < weaponID.length; x++) {
+      weaponCount += 1;
+      thisIteration = pad(x + 1, 5);
+      inventNum = pad(parseInt(weaponID[x]), 5);
+      buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+      buildXML += '\t\t\t\t<shortcut type="windowreference">\n';
+      buildXML += "\t\t\t\t\t<class>item</class>\n";
+      buildXML +=
+        "\t\t\t\t\t<recordname>....inventorylist.id-" +
+        inventNum +
+        "</recordname>\n";
+      buildXML += "\t\t\t\t</shortcut>\n";
+      buildXML += '\t\t\t\t<name type="string">' + weaponName[x] + "</name>\n";
+      buildXML +=
+        '\t\t\t\t<properties type="string">' +
+        weaponProperties[x] +
+        "</properties>\n";
+      buildXML += "\t\t\t\t<damagelist>\n";
+      buildXML += "\t\t\t\t\t<id-00001>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<bonus type="number">' + weaponBonus[x] + "</bonus>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<dice type="dice">' + weaponDice[x] + "</dice>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<stat type="string">' + weaponBase[x] + "</stat>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<type type="string">' + weaponType[x] + "</type>\n";
+      buildXML += "\t\t\t\t\t</id-00001>\n";
+      buildXML += "\t\t\t\t</damagelist>\n";
+      if (weaponName[x].includes("Crossbow")) {
+        buildXML +=
+          '\t\t\t\t<maxammo type="number">' + numBolts + "</maxammo>\n";
+      } else if (weaponName[x].includes("Sling")) {
+        buildXML +=
+          '\t\t\t\t<maxammo type="number">' + numBullets + "</maxammo>\n";
+      } else if (weaponName[x].includes("Blowgun")) {
+        buildXML +=
+          '\t\t\t\t<maxammo type="number">' + numNeedles + "</maxammo>\n";
+      } else if (
+        weaponName[x].includes("Shortbow") ||
+        weaponName[x].includes("Longbow")
+      ) {
+        buildXML +=
+          '\t\t\t\t<maxammo type="number">' + numArrows + "</maxammo>\n";
+      }
+      buildXML +=
+        '\t\t\t\t<attackbonus type="number">' +
+        weaponBonus[x] +
+        "</attackbonus>\n";
+      buildXML +=
+        '\t\t\t\t<attackstat type="string">' +
+        weaponBase[x] +
+        "</attackstat>\n";
+      buildXML += '\t\t\t\t<isidentified type="number">1</isidentified>\n';
+      // 0: Melee, 1: Ranged, 2: Thrown
+      if (weaponProperties[x].match(/Thrown/)) {
+        buildXML += '\t\t\t\t<type type="number">2</type>\n';
+      } else if (weaponProperties[x].match(/Range/)) {
+        buildXML += '\t\t\t\t<type type="number">1</type>\n';
+      } else {
+        buildXML += '\t\t\t\t<type type="number">0</type>\n';
+      }
+
+      buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+      if (weaponProperties[x].includes("Thrown")) {
+        thrownCount += 1;
+        weaponCount += 1;
+        thisIteration = pad(weaponID.length + thrownCount, 5);
+        // We need to add these to the end, providing a higher weaponID.length
+        inventNum = pad(parseInt(weaponID[x]), 5);
+        buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+        buildXML += '\t\t\t\t<shortcut type="windowreference">\n';
+        buildXML += "\t\t\t\t\t<class>item</class>\n";
+        buildXML +=
+          "\t\t\t\t\t<recordname>....inventorylist.id-" +
+          inventNum +
+          "</recordname>\n";
+        buildXML += "\t\t\t\t</shortcut>\n";
+        buildXML +=
+          '\t\t\t\t<name type="string">' + weaponName[x] + "</name>\n";
+        buildXML +=
+          '\t\t\t\t<properties type="string">' +
+          weaponProperties[x] +
+          "</properties>\n";
+        buildXML += "\t\t\t\t<damagelist>\n";
+        buildXML += "\t\t\t\t\t<id-00001>\n";
+        buildXML +=
+          '\t\t\t\t\t\t<bonus type="number">' + weaponBonus[x] + "</bonus>\n";
+        buildXML +=
+          '\t\t\t\t\t\t<dice type="dice">' + weaponDice[x] + "</dice>\n";
+        buildXML +=
+          '\t\t\t\t\t\t<stat type="string">' + weaponBase[x] + "</stat>\n";
+        buildXML +=
+          '\t\t\t\t\t\t<type type="string">' + weaponType[x] + "</type>\n";
+        buildXML += "\t\t\t\t\t</id-00001>\n";
+        buildXML += "\t\t\t\t</damagelist>\n";
+        buildXML +=
+          '\t\t\t\t<attackbonus type="number">' +
+          weaponBonus[x] +
+          "</attackbonus>\n";
+        buildXML +=
+          '\t\t\t\t<attackstat type="string">' +
+          weaponBase[x] +
+          "</attackstat>\n";
+        buildXML += '\t\t\t\t<isidentified type="number">1</isidentified>\n';
+        buildXML += '\t\t\t\t<type type="number">0</type>\n';
+        buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+      }
+    }
+    if (isMonk == 1) {
+      weaponCount += 1;
+      thisIteration = pad(weaponCount + 1, 5);
+      buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+      buildXML += addMonkUnarmedStrike;
+      buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+    }
+    buildXML += "\t\t</weaponlist>\n";
+    /* * * * * End of Weaponlist * * * * */
+
+    if (character.traits.personalityTraits != null) {
+      buildXML +=
+        '\t\t<personalitytraits type="string">' +
+        fixQuote(character.traits.personalityTraits) +
+        "</personalitytraits>\n";
+    }
+    if (character.traits.ideals != null) {
+      buildXML +=
+        '\t\t<ideals type="string">' +
+        fixQuote(character.traits.ideals) +
+        "</ideals>\n";
+    }
+    if (character.traits.bonds != null) {
+      buildXML +=
+        '\t\t<bonds type="string">' +
+        fixQuote(character.traits.bonds) +
+        "</bonds>\n";
+    }
+    if (character.traits.flaws != null) {
+      buildXML +=
+        '\t\t<flaws type="string">' +
+        fixQuote(character.traits.flaws) +
+        "</flaws>\n";
+    }
+
+    if (character.eyes != null) {
+      hasAppear += 1;
+    }
+    if (character.hair != null) {
+      hasAppear += 2;
+    }
+    if (character.skin != null) {
+      hasAppear += 4;
+    }
+
+    if (hasAppear == 1) {
+      buildXML +=
+        '\t\t<appearance type="string">Eyes: ' +
+        fixQuote(character.eyes) +
+        "</appearance>\n";
+    } else if (hasAppear == 2) {
+      buildXML +=
+        '\t\t<appearance type="string">Hair: ' +
+        fixQuote(character.hair) +
+        "</appearance>\n";
+    } else if (hasAppear == 3) {
+      buildXML +=
+        '\t\t<appearance type="string">Eyes: ' +
+        fixQuote(character.eyes) +
+        "\nHair: " +
+        fixQuote(character.hair) +
+        "</appearance>\n";
+    } else if (hasAppear == 4) {
+      buildXML +=
+        '\t\t<appearance type="string">Skin: ' +
+        fixQuote(character.skin) +
+        "</appearance>\n";
+    } else if (hasAppear == 5) {
+      buildXML +=
+        '\t\t<appearance type="string">Eyes: ' +
+        fixQuote(character.eyes) +
+        "\nSkin: " +
+        fixQuote(character.skin) +
+        "</appearance>\n";
+    } else if (hasAppear == 6) {
+      buildXML +=
+        '\t\t<appearance type="string">Hair: ' +
+        fixQuote(character.hair) +
+        "\nSkin: " +
+        fixQuote(character.skin) +
+        "</appearance>\n";
+    } else if (hasAppear == 7) {
+      buildXML +=
+        '\t\t<appearance type="string">Eyes: ' +
+        fixQuote(character.eyes) +
+        "\nHair: " +
+        fixQuote(character.hair) +
+        "\nSkin: " +
+        fixQuote(character.skin) +
+        "</appearance>\n";
+    }
 
   allXML = startXML + buildXML + endXML;
   const parser = new DOMParser();
