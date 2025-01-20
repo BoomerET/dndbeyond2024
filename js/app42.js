@@ -322,6 +322,13 @@ const skillsReference = [
   "wisdom",
 ];
 
+const noDexArmor = [
+  "ring_mail", 
+  "chain_mail", 
+  "splint", 
+  "plate"
+];
+
 // Create hashmap for skills
 const skillsMap = {};
 for (let i = 0; i < skillsList.length; i++) {
@@ -359,19 +366,41 @@ var walkSpeed = 0;
 var addSpeed = 0;
 var charAlign = "";
 var hasAppear = 0;
+var holdFeatures = [];
+var holdProf = [];
+var hasSenses = 0;
+var senseType = [];
+var senseValue = [];
+var finalAncestry = "";
+var onlyFirst = 0;
+var baseAC = 0;
+var shieldYes = 0;
+var shieldAC = 0;
+var armDis = 0;
+var armShieldProf = 0;
+var mamFeat = 0;
+var alertFeat = 0;
+var mobileFeat = 0;
+var obsFeat = 0;
+var profBonus = 0;
+var passWisBonus = 0;
+var addBonusArmorAC = 0;
+var addBonusOtherAC = 0;
+var addSavingThrows = 0;
+var specialDefense = "";
 
 const simpleMeleeWeapon = [
-    "club",
-    "dagger",
-    "greatclub",
-    "handaxe",
-    "javelin",
-    "light_hammer",
-    "mace",
-    "quartrsfaff",
-    "sickle",
-    "spear",
-  ];
+  "club",
+  "dagger",
+  "greatclub",
+  "handaxe",
+  "javelin",
+  "light_hammer",
+  "mace",
+  "quartrsfaff",
+  "sickle",
+  "spear",
+];
 
 const simpleRangedWeapon = ["crossbow_light", "dart", "showtbow", "sling"];
 
@@ -597,8 +626,9 @@ $("#getCharacterData").on("click", function () {
         return;
       },
     });
-    const url = "https://character-service.dndbeyond.com/character/v5/character/";
-    const charID = $('#getcharID').val().trim();
+    const url =
+      "https://character-service.dndbeyond.com/character/v5/character/";
+    const charID = $("#getcharID").val().trim();
     //const proxyurl = "https://uakari-indigo.fly.dev/";
     //const fetchurl = proxyurl + url + charID;
     //let headers = new Headers();
@@ -1240,57 +1270,293 @@ function parseCharacter(inputChar) {
   }
   buildXML += '\t\t<backgroundversion type="string">2024</backgroundversion>\n';
 
-  if (character.race.fullName != null) {
+  /************************************************************************************************/
+
+  var charSpecies = character.race.baseName;
+  if (charSpecies == "Goliath") {
+    charSpecies = "Giant";
+  } else if (charSpecies == "Dragonborn") {
+    charSpecies = "Dragon";
+  } else if (charSpecies == "Tiefling") {
+    charSpecies = "Legacy";
+  } else if (charSpecies == "Elf") {
+    charSpecies = "Lineage";
+  }
+  $.each(character.options.race, function (key04, value04) {
+    if (onlyFirst == 1) return;
+    onlyFirst = 1;
+    if (value04.definition.name.search(charSpecies) > 0) {
+      var findAncestry = value04.definition.name
+        .replace(/\(/g, "")
+        .replace(/\)/g, "")
+        .replace(/\-/g, "")
+        .split(" ");
+      if (charSpecies == "Lineage") {
+        finalAncestry = findAncestry[0];
+      } else if (findAncestry.length < 2) {
+        // No ancestry
+      } else if (findAncestry.length == 2) {
+        finalAncestry = findAncestry[0];
+      } else if (findAncestry.length == 4) {
+        finalAncestry = findAncestry[2];
+      }
+    }
+  });
+
+  if (finalAncestry == "") {
     buildXML +=
       '\t\t<race type="string">' + character.race.fullName + "</race>\n";
-    buildXML += '\t\t<racelink type="windowreference">\n';
-    buildXML += "\t\t\t<class>reference_race</class>\n";
-    switch (character.race.fullName) {
-      case "Aasimar":
-        isAasimar = true;
-        buildXML += "\t\t\t<recordname>race.id-00004@*</recordname>\n";
+  } else {
+    buildXML +=
+      '\t\t<race type="string">' +
+      finalAncestry +
+      " " +
+      character.race.fullName +
+      "</race>\n";
+  }
+
+  buildXML += '\t\t<racelink type="windowreference">\n';
+  buildXML += "\t\t\t<class>reference_race</class>\n";
+  switch (character.race.baseRaceName.toLowerCase()) {
+    case "dwarf":
+      buildXML += "\t\t\t<recordname>race.id-00001@*</recordname>\n";
+      break;
+    case "elf":
+      buildXML += "\t\t\t<recordname>race.id-00002@*</recordname>\n";
+      break;
+    case "human":
+      buildXML += "\t\t\t<recordname>race.id-00003@*</recordname>\n";
+      break;
+    case "aasimar":
+      buildXML += "\t\t\t<recordname>race.id-00004@*</recordname>\n";
+      break;
+    case "dragonborn":
+      buildXML += "\t\t\t<recordname>race.id-00005@*</recordname>\n";
+      break;
+    case "goliath":
+      buildXML += "\t\t\t<recordname>race.id-00006@*</recordname>\n";
+      break;
+    case "gnome":
+      buildXML += "\t\t\t<recordname>race.id-00007@*</recordname>\n";
+      break;
+    case "halfling":
+      buildXML += "\t\t\t<recordname>race.id-00008@*</recordname>\n";
+      break;
+    case "orc":
+      buildXML += "\t\t\t<recordname>race.id-00009@*</recordname>\n";
+      break;
+    case "tiefling":
+      buildXML += "\t\t\t<recordname>race.id-00010@*</recordname>\n";
+      break;
+    default:
+      buildXML += "\t\t\t<recordname>race.id-00005@*</recordname>\n";
+  }
+  buildXML += "\t\t</racelink>\n";
+  // <recordname>race.id-00001@*</recordname> DWARF
+  // <recordname>race.id-00002@*</recordname> ELF
+  // <recordname>race.id-00003@*</recordname> HUMAN
+  // <recordname>race.id-00004@*</recordname> AASIMAR
+  // <recordname>race.id-00005@*</recordname> DRAGONBORN
+  // <recordname>race.id-00006@*</recordname> GOLIATH
+  // <recordname>race.id-00007@*</recordname> GNOME
+  // <recordname>race.id-00008@*</recordname> HALFLING
+  // <recordname>race.id-00009@*</recordname> ORC
+  // <recordname>race.id-00010@*</recordname> TIEFLING
+
+  // <recordname>race_subrace.id-00001@*</recordname> Drow Elf
+  // <recordname>race_subrace.id-00002@*</recordname> High Elf
+  // <recordname>race_subrace.id-00003@*</recordname> Wood Elf
+  // <recordname>race_subrace.id-00004@*</recordname> Cloud Goliath
+  // <recordname>race_subrace.id-00005@*</recordname> NOTHING
+  // <recordname>race_subrace.id-00006@*</recordname> Forest Gnome
+  // <recordname>race_subrace.id-00007@*</recordname> Rock Gnome
+  // <recordname>race_subrace.id-00008@*</recordname> Abyssal Tiefling
+  // <recordname>race_subrace.id-00009@*</recordname> Chthonic Tiefling
+  // <recordname>race_subrace.id-00010@*</recordname> Infernal Tiefling
+  // <recordname>race_subrace.id-00011@*</recordname> Black Dragonborn
+  // <recordname>race_subrace.id-00012@*</recordname> Blue Dragonborn
+  // <recordname>race_subrace.id-00013@*</recordname> Brass Dragonborn
+  // <recordname>race_subrace.id-00014@*</recordname> Bronze Dragonborn
+  // <recordname>race_subrace.id-00015@*</recordname> Copper Dragonborn
+  // <recordname>race_subrace.id-00016@*</recordname> Gold Dragonborn
+  // <recordname>race_subrace.id-00017@*</recordname> Green Dragonborn
+  // <recordname>race_subrace.id-00018@*</recordname> Red Dragonborn
+  // <recordname>race_subrace.id-00019@*</recordname> Silver Dragonborn
+  // <recordname>race_subrace.id-00020@*</recordname> White Dragonborn
+  // <recordname>race_subrace.id-00021@*</recordname> NOTHING
+  // <recordname>race_subrace.id-00022@*</recordname> Fire Goliath
+  // <recordname>race_subrace.id-00023@*</recordname> Frost Goliath
+  // <recordname>race_subrace.id-00024@*</recordname> Hill Goliath
+  // <recordname>race_subrace.id-00025@*</recordname> Stone Goliath
+  // <recordname>race_subrace.id-00026@*</recordname> Storm Goliath
+  // <recordname>race_subrace.id-00027@*</recordname> NOTHING
+  // <recordname>race_subrace.id-00028@*</recordname> NOTHING
+  // <recordname>race_subrace.id-00029@*</recordname> NOTHING
+  // <recordname>race_subrace.id-00030@*</recordname> NOTHING
+
+  //Species traits:
+  //Aasimar:
+  //    None
+  //Dragonborn:
+  //    Black, Blue, Brass, Bronze, Copper, Gold, Green, Red, Silver, White
+  //Dwarf:
+  //    None
+  //Elf:
+  //    Drow Lineage, High Elf Lineage, Wood Elf Lineage
+  //Gnome:
+  //    Forest, Rock
+  //Goliath:
+  //    Cloud, Fire, Frost, Hill, Stone, Storm
+  //Halfling:
+  //    None
+  //Human:
+  //    None
+  //Orc:
+  //    None
+  //Tiefling:
+  //    Abyssal, Chthonic, Infernal
+
+  /* * * * * * * * * * * * * * * * * */
+  /* Ancestry if exists               */
+  /* * * * * * * * * * * * * * * * * */
+
+  if (finalAncestry != "") {
+    buildXML += '\t\t<subracelink type="windowreference">\n';
+    buildXML += "\t\t\t<class>reference_subrace</class>\n";
+    switch (finalAncestry) {
+      case "Drow":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00001@*</recordname>\n";
         break;
-      case "Dragonborn":
-        isDragonborn = true;
-        buildXML += "\t\t\t<recordname>race.id-00005@*</recordname>\n";
+      case "High":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00002@*</recordname>\n";
         break;
-      case "Dwarf":
-        isDwarf = true;
-        buildXML += "\t\t\t<recordname>race.id-00001@*</recordname>\n";
+      case "Wood":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00003@*</recordname>\n";
         break;
-      case "Elf":
-        isElf = true;
-        buildXML += "\t\t\t<recordname>race.id-00002@*</recordname>\n";
+      case "Cloud":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00004@*</recordname>\n";
         break;
-      case "Gnome":
-        isGnome = true;
-        buildXML += "\t\t\t<recordname>race.id-00007@*</recordname>\n";
+      case "Forest":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00006@*</recordname>\n";
         break;
-      case "Goliath":
-        isGoliath = true;
-        buildXML += "\t\t\t<recordname>race.id-00006@*</recordname>\n";
+      case "Rock":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00007@*</recordname>\n";
         break;
-      case "Halfling":
-        isHalfling = true;
-        buildXML += "\t\t\t<recordname>race.id-00008@*</recordname>\n";
+      case "Abyssal":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00008@*</recordname>\n";
         break;
-      case "Human":
-        isHuman = true;
-        buildXML += "\t\t\t<recordname>race.id-00003@*</recordname>\n";
+      case "Cthonic":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00009@*</recordname>\n";
         break;
-      case "Orc":
-        isOrc = true;
-        buildXML += "\t\t\t<recordname>race.id-00009@*</recordname>\n";
+      case "Infernal":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00010@*</recordname>\n";
         break;
-      case "Tiefling":
-        isTiefling = true;
-        buildXML += "\t\t\t<recordname>race.id-00010@*</recordname>\n";
+      case "Black":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00011@*</recordname>\n";
+        break;
+      case "Blue":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00012@*</recordname>\n";
+        break;
+      case "Brass":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00013@*</recordname>\n";
+        break;
+      case "Bronze":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00014@*</recordname>\n";
+        break;
+      case "Copper":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00015@*</recordname>\n";
+        break;
+      case "Gold":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00016@*</recordname>\n";
+        break;
+      case "Green":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00017@*</recordname>\n";
+        break;
+      case "Red":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00018@*</recordname>\n";
+        break;
+      case "Silver":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00019@*</recordname>\n";
+        break;
+      case "White":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00020@*</recordname>\n";
+        break;
+      case "Fire":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00022@*</recordname>\n";
+        break;
+      case "Frost":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00023@*</recordname>\n";
+        break;
+      case "Hill":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00024@*</recordname>\n";
+        break;
+      case "Stone":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00025@*</recordname>\n";
+        break;
+      case "Storm":
+        buildXML += "\t\t\t<recordname>race_subrace.id-00026@*</recordname>\n";
         break;
       default:
+        buildXML += "\t\t\t<recordname>race_subrace.id-00042@*</recordname>\n";
     }
-    buildXML +=
-      '\t\t\t</racelink>\n\t\t<raceversion type="string">2024</raceversion>\n';
+
+    buildXML += "\t\t</subracelink>\n";
   }
+  /**********************************************************************************/
+
+  //if (character.race.fullName != null) {
+  //  buildXML +=
+  //    '\t\t<race type="string">' + character.race.fullName + "</race>\n";
+  //  buildXML += '\t\t<racelink type="windowreference">\n';
+  //  buildXML += "\t\t\t<class>reference_race</class>\n";
+  //  switch (character.race.fullName) {
+  //    case "Aasimar":
+  //      isAasimar = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00004@*</recordname>\n";
+  //      break;
+  //    case "Dragonborn":
+  //      isDragonborn = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00005@*</recordname>\n";
+  //      break;
+  //    case "Dwarf":
+  //      isDwarf = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00001@*</recordname>\n";
+  //      break;
+  //    case "Elf":
+  //      isElf = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00002@*</recordname>\n";
+  //      break;
+  //    case "Gnome":
+  //      isGnome = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00007@*</recordname>\n";
+  //      break;
+  //    case "Goliath":
+  //      isGoliath = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00006@*</recordname>\n";
+  //      break;
+  //    case "Halfling":
+  //      isHalfling = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00008@*</recordname>\n";
+  //      break;
+  //    case "Human":
+  //      isHuman = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00003@*</recordname>\n";
+  //      break;
+  //    case "Orc":
+  //      isOrc = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00009@*</recordname>\n";
+  //      break;
+  //    case "Tiefling":
+  //      isTiefling = true;
+  //      buildXML += "\t\t\t<recordname>race.id-00010@*</recordname>\n";
+  //      break;
+  //    default:
+  //  }
+  //  buildXML +=
+  //    '\t\t\t</racelink>\n\t\t<raceversion type="string">2024</raceversion>\n';
+  //}
+
+  
 
   // Get starting class ID
   $.each(
@@ -1499,6 +1765,12 @@ function parseCharacter(inputChar) {
           skillsMap["sleight_of_hand"] = 1;
         }
       }
+      if (raceValue.type == "sense") {
+        // Can we build senses?
+        hasSenses = 1;
+        senseType.push(raceValue.friendlySubtypeName);
+        senseValue.push(raceValue.value);
+      }
     });
     $.each(character.modifiers.class, function (classKey, classValue) {
       if (classValue.type == "proficiency") {
@@ -1601,7 +1873,6 @@ function parseCharacter(inputChar) {
       } else {
         buildXML += '\t\t<size type="string">Unknown</size>\n';
       }
-      
     }
   });
   walkSpeed = parseInt(character.race.weightSpeeds.normal.walk) + addSpeed;
@@ -1610,6 +1881,559 @@ function parseCharacter(inputChar) {
   buildXML +=
     '\t\t\t<total type="number">' + parseInt(walkSpeed) + "</total>\n";
   buildXML += "\t\t</speed>\n";
+
+  
+
+  /* * * * Start of Weaponlist * * * */
+  buildXML += "\t\t<weaponlist>\n";
+  var weaponCount = 0;
+  var thrownCount = 0;
+  for (x = 0; x < weaponID.length; x++) {
+    weaponCount += 1;
+    thisIteration = pad(x + 1, 5);
+    inventNum = pad(parseInt(weaponID[x]), 5);
+    buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+    buildXML += '\t\t\t\t<shortcut type="windowreference">\n';
+    buildXML += "\t\t\t\t\t<class>item</class>\n";
+    buildXML +=
+      "\t\t\t\t\t<recordname>....inventorylist.id-" +
+      inventNum +
+      "</recordname>\n";
+    buildXML += "\t\t\t\t</shortcut>\n";
+    buildXML += '\t\t\t\t<name type="string">' + weaponName[x] + "</name>\n";
+    buildXML +=
+      '\t\t\t\t<properties type="string">' +
+      weaponProperties[x] +
+      "</properties>\n";
+    buildXML += "\t\t\t\t<damagelist>\n";
+    buildXML += "\t\t\t\t\t<id-00001>\n";
+    buildXML +=
+      '\t\t\t\t\t\t<bonus type="number">' + weaponBonus[x] + "</bonus>\n";
+    buildXML += '\t\t\t\t\t\t<dice type="dice">' + weaponDice[x] + "</dice>\n";
+    buildXML +=
+      '\t\t\t\t\t\t<stat type="string">' + weaponBase[x] + "</stat>\n";
+    buildXML +=
+      '\t\t\t\t\t\t<type type="string">' + weaponType[x] + "</type>\n";
+    buildXML += "\t\t\t\t\t</id-00001>\n";
+    buildXML += "\t\t\t\t</damagelist>\n";
+    if (weaponName[x].includes("Crossbow")) {
+      buildXML += '\t\t\t\t<maxammo type="number">' + numBolts + "</maxammo>\n";
+    } else if (weaponName[x].includes("Sling")) {
+      buildXML +=
+        '\t\t\t\t<maxammo type="number">' + numBullets + "</maxammo>\n";
+    } else if (weaponName[x].includes("Blowgun")) {
+      buildXML +=
+        '\t\t\t\t<maxammo type="number">' + numNeedles + "</maxammo>\n";
+    } else if (
+      weaponName[x].includes("Shortbow") ||
+      weaponName[x].includes("Longbow")
+    ) {
+      buildXML +=
+        '\t\t\t\t<maxammo type="number">' + numArrows + "</maxammo>\n";
+    }
+    buildXML +=
+      '\t\t\t\t<attackbonus type="number">' +
+      weaponBonus[x] +
+      "</attackbonus>\n";
+    buildXML +=
+      '\t\t\t\t<attackstat type="string">' + weaponBase[x] + "</attackstat>\n";
+    buildXML += '\t\t\t\t<isidentified type="number">1</isidentified>\n';
+    // 0: Melee, 1: Ranged, 2: Thrown
+    if (weaponProperties[x].match(/Thrown/)) {
+      buildXML += '\t\t\t\t<type type="number">2</type>\n';
+    } else if (weaponProperties[x].match(/Range/)) {
+      buildXML += '\t\t\t\t<type type="number">1</type>\n';
+    } else {
+      buildXML += '\t\t\t\t<type type="number">0</type>\n';
+    }
+
+    buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+    if (weaponProperties[x].includes("Thrown")) {
+      thrownCount += 1;
+      weaponCount += 1;
+      thisIteration = pad(weaponID.length + thrownCount, 5);
+      // We need to add these to the end, providing a higher weaponID.length
+      inventNum = pad(parseInt(weaponID[x]), 5);
+      buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+      buildXML += '\t\t\t\t<shortcut type="windowreference">\n';
+      buildXML += "\t\t\t\t\t<class>item</class>\n";
+      buildXML +=
+        "\t\t\t\t\t<recordname>....inventorylist.id-" +
+        inventNum +
+        "</recordname>\n";
+      buildXML += "\t\t\t\t</shortcut>\n";
+      buildXML += '\t\t\t\t<name type="string">' + weaponName[x] + "</name>\n";
+      buildXML +=
+        '\t\t\t\t<properties type="string">' +
+        weaponProperties[x] +
+        "</properties>\n";
+      buildXML += "\t\t\t\t<damagelist>\n";
+      buildXML += "\t\t\t\t\t<id-00001>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<bonus type="number">' + weaponBonus[x] + "</bonus>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<dice type="dice">' + weaponDice[x] + "</dice>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<stat type="string">' + weaponBase[x] + "</stat>\n";
+      buildXML +=
+        '\t\t\t\t\t\t<type type="string">' + weaponType[x] + "</type>\n";
+      buildXML += "\t\t\t\t\t</id-00001>\n";
+      buildXML += "\t\t\t\t</damagelist>\n";
+      buildXML +=
+        '\t\t\t\t<attackbonus type="number">' +
+        weaponBonus[x] +
+        "</attackbonus>\n";
+      buildXML +=
+        '\t\t\t\t<attackstat type="string">' +
+        weaponBase[x] +
+        "</attackstat>\n";
+      buildXML += '\t\t\t\t<isidentified type="number">1</isidentified>\n';
+      buildXML += '\t\t\t\t<type type="number">0</type>\n';
+      buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+    }
+  }
+  if (isMonk == 1) {
+    weaponCount += 1;
+    thisIteration = pad(weaponCount + 1, 5);
+    buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+    buildXML += addMonkUnarmedStrike;
+    buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+  }
+  buildXML += "\t\t</weaponlist>\n";
+  /* * * * * End of Weaponlist * * * * */
+
+  if (character.traits.personalityTraits != null) {
+    buildXML +=
+      '\t\t<personalitytraits type="string">' +
+      fixQuote(character.traits.personalityTraits) +
+      "</personalitytraits>\n";
+  }
+  if (character.traits.ideals != null) {
+    buildXML +=
+      '\t\t<ideals type="string">' +
+      fixQuote(character.traits.ideals) +
+      "</ideals>\n";
+  }
+  if (character.traits.bonds != null) {
+    buildXML +=
+      '\t\t<bonds type="string">' +
+      fixQuote(character.traits.bonds) +
+      "</bonds>\n";
+  }
+  if (character.traits.flaws != null) {
+    buildXML +=
+      '\t\t<flaws type="string">' +
+      fixQuote(character.traits.flaws) +
+      "</flaws>\n";
+  }
+
+  if (character.eyes != null) {
+    hasAppear += 1;
+  }
+  if (character.hair != null) {
+    hasAppear += 2;
+  }
+  if (character.skin != null) {
+    hasAppear += 4;
+  }
+
+  if (hasAppear == 1) {
+    buildXML +=
+      '\t\t<appearance type="string">Eyes: ' +
+      fixQuote(character.eyes) +
+      "</appearance>\n";
+  } else if (hasAppear == 2) {
+    buildXML +=
+      '\t\t<appearance type="string">Hair: ' +
+      fixQuote(character.hair) +
+      "</appearance>\n";
+  } else if (hasAppear == 3) {
+    buildXML +=
+      '\t\t<appearance type="string">Eyes: ' +
+      fixQuote(character.eyes) +
+      "\nHair: " +
+      fixQuote(character.hair) +
+      "</appearance>\n";
+  } else if (hasAppear == 4) {
+    buildXML +=
+      '\t\t<appearance type="string">Skin: ' +
+      fixQuote(character.skin) +
+      "</appearance>\n";
+  } else if (hasAppear == 5) {
+    buildXML +=
+      '\t\t<appearance type="string">Eyes: ' +
+      fixQuote(character.eyes) +
+      "\nSkin: " +
+      fixQuote(character.skin) +
+      "</appearance>\n";
+  } else if (hasAppear == 6) {
+    buildXML +=
+      '\t\t<appearance type="string">Hair: ' +
+      fixQuote(character.hair) +
+      "\nSkin: " +
+      fixQuote(character.skin) +
+      "</appearance>\n";
+  } else if (hasAppear == 7) {
+    buildXML +=
+      '\t\t<appearance type="string">Eyes: ' +
+      fixQuote(character.eyes) +
+      "\nHair: " +
+      fixQuote(character.hair) +
+      "\nSkin: " +
+      fixQuote(character.skin) +
+      "</appearance>\n";
+  }
+
+  totalFeatures = 0;
+  totalFeats = 0;
+  buildXML += "\t\t<featurelist>\n";
+  character.classes.some(function (current_class) {
+    classLevel = current_class.level;
+    current_class.definition.classFeatures.some(function (current_feature) {
+      switch (current_feature.name) {
+        case "Hit Points":
+        case "Proficiencies":
+        case "Martial Archetype":
+        case "Fighting Style":
+        case "Ability Score Improvement":
+        case "Oath Spells":
+        //case "Spellcasting":
+        case "Core Paladin Traits":
+        case "Circle Spells":
+        case "Bonus Cantrip":
+        case "Bonus Proficiencies":
+        case "Druidic":
+        case "Expanded Spell List":
+        case "Otherwordly Patron":
+        case "Expanded Spell List":
+        case "Acrobatics":
+        case "Animal Handling":
+        case "Arcana":
+        case "Athletics":
+        case "Deception":
+        case "History":
+        case "Intimidation":
+        case "Investigation":
+        case "Medicine":
+        case "Nature":
+        case "Perception":
+        case "Performance":
+        case "Persuasion":
+        case "Religion":
+        case "Sleight of Hand":
+        case "Stealth":
+        case "Survival":
+        case "Divine Domain":
+        case "Bonus Proficiency":
+          return;
+        default:
+          break;
+      }
+      if (parseInt(current_feature.requiredLevel) <= parseInt(classLevel)) {
+        if (!holdFeatures.includes(current_feature.name)) {
+          holdFeatures.push(current_feature.name);
+          totalFeatures += 1;
+          thisIteration = pad(totalFeatures, 5);
+          buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+          buildXML += '\t\t\t\t<locked type="number">1</locked>\n';
+          buildXML +=
+            '\t\t\t\t<name type="string">' +
+            fixQuote(current_feature.name) +
+            "</name>\n";
+          buildXML +=
+            '\t\t\t\t<source type="string">' +
+            convert_case(
+              replaceDash(current_class.definition.name.toLowerCase())
+            ) +
+            "</source>\n";
+          buildXML += '\t\t\t\t<text type="formattedtext">\n';
+          buildXML +=
+            "\t\t\t\t\t" + fixDesc(current_feature.description) + "\n";
+          buildXML += "\t\t\t\t</text>\n";
+          buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+        }
+      }
+    });
+    if (current_class.hasOwnProperty("subclassDefinition")) {
+      if (current_class.subclassDefinition != null) {
+        if (holdFeatures.includes(current_class.subclassDefinition.name)) {
+          // Skip this one, it's already in the array
+        } else {
+          holdFeatures.push(current_class.subclassDefinition.name);
+          totalFeatures += 1;
+          thisIteration = pad(totalFeatures, 5);
+          buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+          buildXML += '\t\t\t\t<locked type="number">1</locked>\n';
+          buildXML +=
+            '\t\t\t\t<name type="string">' +
+            fixQuote(current_class.subclassDefinition.name) +
+            "</name>\n";
+          buildXML += '\t\t\t\t<text type="formattedtext">\n';
+          buildXML +=
+            "\t\t\t\t\t" +
+            fixDesc(current_class.subclassDefinition.description) +
+            "\n";
+          buildXML += "\t\t\t\t</text>\n";
+          buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+        }
+        current_class.subclassDefinition.classFeatures.some(function (
+          charSubClass
+        ) {
+          switch (charSubClass.name) {
+            case "Hit Points":
+            case "Proficiencies":
+            case "Martial Archetype":
+            case "Fighting Style":
+            case "Ability Score Improvement":
+            case "Oath Spells":
+            case "Circle Spells":
+            case "Bonus Cantrip":
+            case "Bonus Proficiencies":
+            case "Druidic":
+            case "Expanded Spell List":
+            case "Otherwordly Patron":
+            case "Expanded Spell List":
+            case "Acrobatics":
+            case "Animal Handling":
+            case "Arcana":
+            case "Athletics":
+            case "Deception":
+            case "History":
+            case "Intimidation":
+            case "Investigation":
+            case "Medicine":
+            case "Nature":
+            case "Perception":
+            case "Performance":
+            case "Persuasion":
+            case "Religion":
+            case "Sleight of Hand":
+            case "Stealth":
+            case "Survival":
+            case "Divine Domain":
+            case "Bonus Proficiency":
+              return;
+            default:
+              break;
+          }
+          if (charSubClass.requiredLevel <= parseInt(classLevel)) {
+            if (holdFeatures.includes(charSubClass.name)) {
+              // Skip this one, it's already in the array
+            } else {
+              holdFeatures.push(charSubClass.name);
+              totalFeatures += 1;
+              thisIteration = pad(totalFeatures, 5);
+              buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+              buildXML += '\t\t\t\t<locked type="number">1</locked>\n';
+              buildXML +=
+                '\t\t\t\t<name type="string">' +
+                fixQuote(charSubClass.name) +
+                "</name>\n";
+              buildXML += '\t\t\t\t<text type="formattedtext">\n';
+              buildXML +=
+                "\t\t\t\t\t" + fixDesc(charSubClass.description) + "\n";
+              buildXML += "\t\t\t\t</text>\n";
+              buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+            }
+          }
+        });
+      }
+    }
+  });
+  const charOptions = character.options.class;
+  if (charOptions != null)
+    charOptions.some(function (thisOption) {
+      switch (thisOption.definition.name) {
+        case "Hit Points":
+        case "Proficiencies":
+        case "Martial Archetype":
+        case "Fighting Style":
+        case "Ability Score Improvement":
+        case "Oath Spells":
+        case "Circle Spells":
+        case "Bonus Cantrip":
+        case "Bonus Proficiencies":
+        case "Druidic":
+        case "Expanded Spell List":
+        case "Otherwordly Patron":
+        case "Expanded Spell List":
+        case "Acrobatics":
+        case "Animal Handling":
+        case "Arcana":
+        case "Athletics":
+        case "Deception":
+        case "History":
+        case "Intimidation":
+        case "Investigation":
+        case "Medicine":
+        case "Nature":
+        case "Perception":
+        case "Performance":
+        case "Persuasion":
+        case "Religion":
+        case "Sleight of Hand":
+        case "Stealth":
+        case "Survival":
+        case "Divine Domain":
+        case "Bonus Proficiency":
+          return;
+        default:
+          break;
+      }
+      totalFeatures += 1;
+      thisIteration = pad(totalFeatures, 5);
+      buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+      buildXML += '\t\t\t\t<locked type="number">1</locked>\n';
+      buildXML +=
+        '\t\t\t\t<name type="string">' +
+        fixQuote(thisOption.definition.name) +
+        "</name>\n";
+      buildXML += '\t\t\t\t<text type="formattedtext">\n';
+      buildXML +=
+        "\t\t\t\t\t" + fixDesc(thisOption.definition.description) + "\n";
+      buildXML += "\t\t\t\t</text>\n";
+      buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+    });
+  buildXML += "\t\t</featurelist>\n";
+
+  buildXML += "\t\t<featlist>\n";
+
+  //"grantedFeats": [
+  //  {
+  //    "id": 16315,
+  //    "name": "Tough",
+  //    "featIds": [
+  //      1789206
+  //    ]
+  //  },
+
+  $.each(character.background.definition.grantedFeats, function (key32, val32) {
+    featValue = 0;
+    if (val32.name != "Ability Scores") {
+      // Skip grantedFeats of Ability Scores
+      var thisFeat2 = val32.featIds;
+      $.each(character.feats, function (key001, val001) {
+        if (val001.definition.id == thisFeat2[0]) {
+          // Description = val.definition.description
+          featValue += 1;
+          thisIteration = pad(featValue, 5);
+          buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+          buildXML += "\t\t\t<effectlist />\n";
+          buildXML += '\t\t\t<name type="string">' + val32.name + "</name>\n";
+          buildXML += '\t\t\t<text type="formattedtext">\n';
+          buildXML += "\t\t\t\t<p>" + val001.definition.description + "</p>\n";
+          buildXML += "\t\t\t</text>\n";
+          buildXML += '\t\t\t<version type="string">2024</version>\n';
+          buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+        }
+      });
+    }
+  });
+  buildXML += "\t\t</featlist>\n";
+
+  character.race.racialTraits.some(function (current_trait) {
+    if (current_trait.definition.name == "Darkvision") {
+      buildXML += '\t\t<senses type="string">Darkvision 60ft.</senses>\n';
+    } else if (current_trait.definition.name == "Superior Darkvision") {
+      buildXML += '\t\t<senses type="string">Darkvision 120ft.</senses>\n';
+    }
+  });
+
+  buildXML += "\t\t<traitlist>\n";
+  character.race.racialTraits.some(function (current_trait, i) {
+    switch (current_trait.definition.name) {
+      case "Ability Score Increase":
+      case "Age":
+      case "Alignment":
+      case "Size":
+      case "Speed":
+      //case "Darkvision":
+      case "Dwarven Combat Training":
+      case "Tool Proficiency":
+      case "Languages":
+      case "Dwarven Toughness":
+      case "Cantrip":
+      case "Extra Language":
+      case "Dwarven Armor Training":
+      case "Skill Versatility":
+      case "Ability Score Increases":
+      case "Creature Type":
+        return;
+      default:
+        break;
+    }
+    thisIteration = pad(i + 1, 5);
+    buildXML += "\t\t\t<id-" + thisIteration + ">\n";
+
+    // Drag/drop only lists name, not any snippet, so we've removed it.
+    buildXML +=
+      '\t\t\t\t<name type="string">' +
+      fixQuote(current_trait.definition.name).trim() +
+      "</name>\n";
+    buildXML +=
+      '\t\t\t\t<source type="string">' +
+      convert_case(replaceDash(character.race.baseName.toLowerCase())) +
+      "</source>\n";
+    buildXML += '\t\t\t\t<locked type="number">1</locked>\n';
+    buildXML += '\t\t\t\t<text type="formattedtext">\n';
+    buildXML +=
+      "\t\t\t\t\t" + fixDesc(current_trait.definition.description) + "\n";
+    buildXML += "\t\t\t\t</text>\n";
+    buildXML += '\t\t\t\t<type type="string">racial</type>\n';
+    buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+  });
+
+  buildXML += "\t\t</traitlist>\n";
+
+  character.inventory.some(function (eachInventory, i) {
+    if (eachInventory.definition.filterType == "Armor") {
+      if (eachInventory.equipped == true) {
+        baseAC += eachInventory.definition.armorClass;
+        if (eachInventory.definition.type == "Shield") {
+          shieldYes = 1;
+          shieldAC = eachInventory.definition.armorClass;
+          baseAC -= shieldAC;
+          if (holdProf.includes("Shields")) {
+            // Shield is proficient
+          } else {
+            armShieldProf -= 1;
+          }
+        } else {
+          if (eachInventory.definition.stealthCheck == 2) {
+            armDis = 1;
+          }
+          thisArmor = eachInventory.definition.name
+            .toLowerCase()
+            .replace(/\s/g, "_")
+            .replace(/-/g, "_");
+          if (noDexArmor.includes(thisArmor)) {
+            dexBonus = 0;
+            if (!holdProf.includes("Heavy Armor")) {
+              armShieldProf -= 1;
+            }
+          } else if (max2DexArmor.includes(thisArmor)) {
+            if (dexBonus > 2) {
+              dexBonus = 2;
+            }
+            if (!holdProf.includes("Medium Armor")) {
+              armShieldProf -= 1;
+            }
+          } else if (max3DexArmor.includes(thisArmor)) {
+            if (dexBonus > 3) {
+              dexBonus = 3;
+            }
+          } else if (fullDexArmor.includes(thisArmor)) {
+            if (dexBonus > 4) {
+              dexBonus = 4;
+            }
+            if (!holdProf.includes("Light Armor")) {
+              armShieldProf -= 1;
+            }
+          }
+        }
+      }
+    }
+  });
 
   /* * * * Start of Inventory * * * */
   buildXML += "\t\t<inventorylist>\n";
@@ -1833,11 +2657,7 @@ function parseCharacter(inputChar) {
 
         if (item.hasOwnProperty("canAttune")) {
           if (item.isAttuned == true && item.definition.canAttune == true) {
-            for (
-              d = 0;
-              d <= item.definition.grantedModifiers.length - 1;
-              d++
-            ) {
+            for (d = 0; d <= item.definition.grantedModifiers.length - 1; d++) {
               curWeapBon = item.definition.grantedModifiers[d].value;
             }
           }
@@ -1957,8 +2777,7 @@ function parseCharacter(inputChar) {
                   item.equipped == true &&
                   item.definition.grantedModifiers[l].type == "bonus"
                 ) {
-                  addBonusOtherAC +=
-                    item.definition.grantedModifiers[l].value;
+                  addBonusOtherAC += item.definition.grantedModifiers[l].value;
                 }
                 if (
                   item.definition.grantedModifiers[l].subType ==
@@ -1966,8 +2785,7 @@ function parseCharacter(inputChar) {
                   item.equipped == true &&
                   item.definition.grantedModifiers[l].type == "bonus"
                 ) {
-                  addSavingThrows +=
-                    item.definition.grantedModifiers[l].value;
+                  addSavingThrows += item.definition.grantedModifiers[l].value;
                 }
               }
             }
@@ -1985,8 +2803,7 @@ function parseCharacter(inputChar) {
               addBonusArmorAC += item.definition.grantedModifiers[m].value;
             }
             if (
-              item.definition.grantedModifiers[m].subType ==
-                "saving-throws" &&
+              item.definition.grantedModifiers[m].subType == "saving-throws" &&
               item.equipped == true &&
               item.definition.grantedModifiers[m].type == "bonus"
             ) {
@@ -2016,215 +2833,78 @@ function parseCharacter(inputChar) {
         buildXML +=
           '\t\t\t\t<subtype type="string">Martial Melee Weapon</subtype>\n';
       }
+      buildXML += '\t\t\t\t<parse type="number">1</parse>\n';
       buildXML += "\t\t\t</id-" + thisIteration + ">\n";
     });
   buildXML += "\t\t</inventorylist>\n";
   /* * * * End of Inventory * * * */
 
-  /* * * * Start of Weaponlist * * * */
-  buildXML += "\t\t<weaponlist>\n";
-    var weaponCount = 0;
-    var thrownCount = 0;
-    for (x = 0; x < weaponID.length; x++) {
-      weaponCount += 1;
-      thisIteration = pad(x + 1, 5);
-      inventNum = pad(parseInt(weaponID[x]), 5);
-      buildXML += "\t\t\t<id-" + thisIteration + ">\n";
-      buildXML += '\t\t\t\t<shortcut type="windowreference">\n';
-      buildXML += "\t\t\t\t\t<class>item</class>\n";
-      buildXML +=
-        "\t\t\t\t\t<recordname>....inventorylist.id-" +
-        inventNum +
-        "</recordname>\n";
-      buildXML += "\t\t\t\t</shortcut>\n";
-      buildXML += '\t\t\t\t<name type="string">' + weaponName[x] + "</name>\n";
-      buildXML +=
-        '\t\t\t\t<properties type="string">' +
-        weaponProperties[x] +
-        "</properties>\n";
-      buildXML += "\t\t\t\t<damagelist>\n";
-      buildXML += "\t\t\t\t\t<id-00001>\n";
-      buildXML +=
-        '\t\t\t\t\t\t<bonus type="number">' + weaponBonus[x] + "</bonus>\n";
-      buildXML +=
-        '\t\t\t\t\t\t<dice type="dice">' + weaponDice[x] + "</dice>\n";
-      buildXML +=
-        '\t\t\t\t\t\t<stat type="string">' + weaponBase[x] + "</stat>\n";
-      buildXML +=
-        '\t\t\t\t\t\t<type type="string">' + weaponType[x] + "</type>\n";
-      buildXML += "\t\t\t\t\t</id-00001>\n";
-      buildXML += "\t\t\t\t</damagelist>\n";
-      if (weaponName[x].includes("Crossbow")) {
-        buildXML +=
-          '\t\t\t\t<maxammo type="number">' + numBolts + "</maxammo>\n";
-      } else if (weaponName[x].includes("Sling")) {
-        buildXML +=
-          '\t\t\t\t<maxammo type="number">' + numBullets + "</maxammo>\n";
-      } else if (weaponName[x].includes("Blowgun")) {
-        buildXML +=
-          '\t\t\t\t<maxammo type="number">' + numNeedles + "</maxammo>\n";
-      } else if (
-        weaponName[x].includes("Shortbow") ||
-        weaponName[x].includes("Longbow")
-      ) {
-        buildXML +=
-          '\t\t\t\t<maxammo type="number">' + numArrows + "</maxammo>\n";
-      }
-      buildXML +=
-        '\t\t\t\t<attackbonus type="number">' +
-        weaponBonus[x] +
-        "</attackbonus>\n";
-      buildXML +=
-        '\t\t\t\t<attackstat type="string">' +
-        weaponBase[x] +
-        "</attackstat>\n";
-      buildXML += '\t\t\t\t<isidentified type="number">1</isidentified>\n';
-      // 0: Melee, 1: Ranged, 2: Thrown
-      if (weaponProperties[x].match(/Thrown/)) {
-        buildXML += '\t\t\t\t<type type="number">2</type>\n';
-      } else if (weaponProperties[x].match(/Range/)) {
-        buildXML += '\t\t\t\t<type type="number">1</type>\n';
-      } else {
-        buildXML += '\t\t\t\t<type type="number">0</type>\n';
-      }
-
-      buildXML += "\t\t\t</id-" + thisIteration + ">\n";
-      if (weaponProperties[x].includes("Thrown")) {
-        thrownCount += 1;
-        weaponCount += 1;
-        thisIteration = pad(weaponID.length + thrownCount, 5);
-        // We need to add these to the end, providing a higher weaponID.length
-        inventNum = pad(parseInt(weaponID[x]), 5);
-        buildXML += "\t\t\t<id-" + thisIteration + ">\n";
-        buildXML += '\t\t\t\t<shortcut type="windowreference">\n';
-        buildXML += "\t\t\t\t\t<class>item</class>\n";
-        buildXML +=
-          "\t\t\t\t\t<recordname>....inventorylist.id-" +
-          inventNum +
-          "</recordname>\n";
-        buildXML += "\t\t\t\t</shortcut>\n";
-        buildXML +=
-          '\t\t\t\t<name type="string">' + weaponName[x] + "</name>\n";
-        buildXML +=
-          '\t\t\t\t<properties type="string">' +
-          weaponProperties[x] +
-          "</properties>\n";
-        buildXML += "\t\t\t\t<damagelist>\n";
-        buildXML += "\t\t\t\t\t<id-00001>\n";
-        buildXML +=
-          '\t\t\t\t\t\t<bonus type="number">' + weaponBonus[x] + "</bonus>\n";
-        buildXML +=
-          '\t\t\t\t\t\t<dice type="dice">' + weaponDice[x] + "</dice>\n";
-        buildXML +=
-          '\t\t\t\t\t\t<stat type="string">' + weaponBase[x] + "</stat>\n";
-        buildXML +=
-          '\t\t\t\t\t\t<type type="string">' + weaponType[x] + "</type>\n";
-        buildXML += "\t\t\t\t\t</id-00001>\n";
-        buildXML += "\t\t\t\t</damagelist>\n";
-        buildXML +=
-          '\t\t\t\t<attackbonus type="number">' +
-          weaponBonus[x] +
-          "</attackbonus>\n";
-        buildXML +=
-          '\t\t\t\t<attackstat type="string">' +
-          weaponBase[x] +
-          "</attackstat>\n";
-        buildXML += '\t\t\t\t<isidentified type="number">1</isidentified>\n';
-        buildXML += '\t\t\t\t<type type="number">0</type>\n';
-        buildXML += "\t\t\t</id-" + thisIteration + ">\n";
-      }
+  buildXML += "\t\t<defenses>\n";
+    buildXML += "\t\t\t<ac>\n";
+    if (baseAC == 0) {
+      baseAC += 10;
     }
-    if (isMonk == 1) {
-      weaponCount += 1;
-      thisIteration = pad(weaponCount + 1, 5);
-      buildXML += "\t\t\t<id-" + thisIteration + ">\n";
-      buildXML += addMonkUnarmedStrike;
-      buildXML += "\t\t\t</id-" + thisIteration + ">\n";
+    buildXML += '\t\t\t\t<armor type="number">' + (baseAC - 10) + "</armor>\n";
+    if (mamFeat == 1) {
+      dexterityModifier = 3;
     }
-    buildXML += "\t\t</weaponlist>\n";
-    /* * * * * End of Weaponlist * * * * */
-
-    if (character.traits.personalityTraits != null) {
-      buildXML +=
-        '\t\t<personalitytraits type="string">' +
-        fixQuote(character.traits.personalityTraits) +
-        "</personalitytraits>\n";
+    var npcdexterityModifier = dexterityModifier;
+    switch (dexterityModifier) {
+      case 0:
+        buildXML += '\t\t\t\t<dexterityModifier type="string">no</dexterityModifier>\n';
+        npcdexterityModifier = 0;
+        break;
+      case 2:
+        buildXML += '\t\t\t\t<dexterityModifier type="string">max2</dexterityModifier>\n';
+        if (npcdexterityModifier >= 2) {
+          npcdexterityModifier = 2;
+        }
+        break;
+      case 3:
+        buildXML += '\t\t\t\t<dexterityModifier type="string">max3</dexterityModifier>\n';
+        if (npcdexterityModifier >= 3) {
+          npcdexterityModifier = 3;
+        }
+        break;
     }
-    if (character.traits.ideals != null) {
+    if (isSorcerer == 1 && wearingArmor == 0 && usingShield == 0) {
       buildXML +=
-        '\t\t<ideals type="string">' +
-        fixQuote(character.traits.ideals) +
-        "</ideals>\n";
+        '\t\t\t\t<misc type="number">' + (3 + addBonusOtherAC) + "</misc>\n";
+      npcdexterityModifier += 3 + addBonusOtherAC;
+    } else {
+      buildXML +=
+        '\t\t\t\t<misc type="number">' +
+        (addBonusArmorAC + addBonusOtherAC) +
+        "</misc>\n";
+      npcdexterityModifier += addBonusArmorAC + addBonusOtherAC;
     }
-    if (character.traits.bonds != null) {
-      buildXML +=
-        '\t\t<bonds type="string">' +
-        fixQuote(character.traits.bonds) +
-        "</bonds>\n";
+    if (armDis == 1 && mamFeat == 0) {
+      buildXML += '\t\t\t\t<disstealth type="number">1</disstealth>\n';
     }
-    if (character.traits.flaws != null) {
-      buildXML +=
-        '\t\t<flaws type="string">' +
-        fixQuote(character.traits.flaws) +
-        "</flaws>\n";
+    if (isMonk == 1 && wearingArmor == 0 && usingShield == 0) {
+      buildXML += '\t\t\t\t<stat2 type="string">wisdom</stat2>\n';
+    }
+    if (isBarbarian == 1 && wearingArmor == 0) {
+      buildXML += '\t\t\t\t<stat2 type="string">constitution</stat2>\n';
+    }
+    if (armShieldProf < 0) {
+      buildXML += '\t\t\t\t<prof type="number">0</prof>\n';
+    } else {
+      buildXML += '\t\t\t\t<prof type="number">1</prof>\n';
+    }
+    if (shieldYes == 1) {
+      buildXML += '\t\t\t\t<shield type="number">' + shieldAC + "</shield>\n";
+      npcdexterityModifier += 1;
     }
 
-    if (character.eyes != null) {
-      hasAppear += 1;
-    }
-    if (character.hair != null) {
-      hasAppear += 2;
-    }
-    if (character.skin != null) {
-      hasAppear += 4;
-    }
+    buildXML += '\t\t\t\t<temporary type="number">0</temporary>\n';
+    buildXML += "\t\t\t</ac>\n";
 
-    if (hasAppear == 1) {
-      buildXML +=
-        '\t\t<appearance type="string">Eyes: ' +
-        fixQuote(character.eyes) +
-        "</appearance>\n";
-    } else if (hasAppear == 2) {
-      buildXML +=
-        '\t\t<appearance type="string">Hair: ' +
-        fixQuote(character.hair) +
-        "</appearance>\n";
-    } else if (hasAppear == 3) {
-      buildXML +=
-        '\t\t<appearance type="string">Eyes: ' +
-        fixQuote(character.eyes) +
-        "\nHair: " +
-        fixQuote(character.hair) +
-        "</appearance>\n";
-    } else if (hasAppear == 4) {
-      buildXML +=
-        '\t\t<appearance type="string">Skin: ' +
-        fixQuote(character.skin) +
-        "</appearance>\n";
-    } else if (hasAppear == 5) {
-      buildXML +=
-        '\t\t<appearance type="string">Eyes: ' +
-        fixQuote(character.eyes) +
-        "\nSkin: " +
-        fixQuote(character.skin) +
-        "</appearance>\n";
-    } else if (hasAppear == 6) {
-      buildXML +=
-        '\t\t<appearance type="string">Hair: ' +
-        fixQuote(character.hair) +
-        "\nSkin: " +
-        fixQuote(character.skin) +
-        "</appearance>\n";
-    } else if (hasAppear == 7) {
-      buildXML +=
-        '\t\t<appearance type="string">Eyes: ' +
-        fixQuote(character.eyes) +
-        "\nHair: " +
-        fixQuote(character.hair) +
-        "\nSkin: " +
-        fixQuote(character.skin) +
-        "</appearance>\n";
-    }
+    // Start Insert special defenses here
+    buildXML +=
+      '\t\t\t<special type="string">' + specialDefense + "</special>\n";
+    // End Insert special defenses here
+    buildXML += "\t\t</defenses>\n";
 
   allXML = startXML + buildXML + endXML;
   const parser = new DOMParser();
@@ -2440,52 +3120,64 @@ function invokeSaveAsDialog(file, fileName) {
 }
 
 function fixQuote(badString) {
-    if (badString == "" || badString == null) {
-      return "";
-    }
-    return badString
-      .replace(/\n/g, "\n")
-      .replace(/\u2019/g, "'")
-      .replace(/\u2014/g, "-")
-      .replace(/"/g, "&#34;")
-      .replace(/\u2022/g, ":")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/&nbsp;/g, " ")
-      .replace(/&rsquo;/g, "'")
-      .replace(/\s&/g, "&amp;")
-      .trim();
+  if (badString == "" || badString == null) {
+    return "";
+  }
+  return badString
+    .replace(/\n/g, "\n")
+    .replace(/\u2019/g, "'")
+    .replace(/\u2014/g, "-")
+    .replace(/"/g, "&#34;")
+    .replace(/\u2022/g, ":")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&rsquo;/g, "'")
+    .replace(/\s&/g, "&amp;")
+    .trim();
 }
 
 function fixDesc(badString) {
-    if (badString == "" || badString == null) {
-      return "";
-    }
-    var tempString1 = badString
-      .replace(/<a\s.*?\">/g, "")
-      .replace(/<\/a>/g, "")
-      .replace(/<\/span>/g, "");
-    var tempString2 = tempString1
-      .replace(/<img.*?">/g, "")
-      .replace(/<hr>/g, "<hr />")
-      .replace(/<span>/g, "");
-    var tempString3 = tempString2
-      .replace(/<br>/g, "<br />")
-      .replace(/&rsquo;/g, "'")
-      .replace(/&nbsp;/g, " ");
-    var tempString4 = tempString3
-      .replace(/&ldquo;/g, '"')
-      .replace(/<span\s.*?">/g, "")
-      .replace(/<em>/g, "")
-      .replace(/<\/em>/g, "");
-    var tempString5 = tempString4
-      .replace(/&ndash;/g, "-")
-      .replace(/&lsquo;/g, "'");
-    return tempString5
-      .replace(/&rdquo;/g, '"')
-      .replace(/&mdash;/g, "-")
-      .replace(/&times;/g, "*")
-      .replace(/&minus;/g, "-")
-      .replace(/&hellip;/g, "...")
-      .trim();
+  if (badString == "" || badString == null) {
+    return "";
+  }
+  var tempString1 = badString
+    .replace(/<a\s.*?\">/g, "")
+    .replace(/<\/a>/g, "")
+    .replace(/<\/span>/g, "");
+  var tempString2 = tempString1
+    .replace(/<img.*?">/g, "")
+    .replace(/<hr>/g, "<hr />")
+    .replace(/<span>/g, "");
+  var tempString3 = tempString2
+    .replace(/<br>/g, "<br />")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&nbsp;/g, " ");
+  var tempString4 = tempString3
+    .replace(/&ldquo;/g, '"')
+    .replace(/<span\s.*?">/g, "")
+    .replace(/<em>/g, "")
+    .replace(/<\/em>/g, "");
+  var tempString5 = tempString4
+    .replace(/&ndash;/g, "-")
+    .replace(/&lsquo;/g, "'");
+  return tempString5
+    .replace(/&rdquo;/g, '"')
+    .replace(/&mdash;/g, "-")
+    .replace(/&times;/g, "*")
+    .replace(/&minus;/g, "-")
+    .replace(/&hellip;/g, "...")
+    .trim();
+}
+
+function convert_case(str) {
+  var lower = str.toLowerCase();
+  return lower.replace(/(^|\s)(w)/g, function (x) {
+    return x.toUpperCase();
+  });
+}
+
+function replaceDash(str) {
+  firstStep = str.replace(/-/g, "_");
+  return firstStep.replace(/\s/g, "_");
 }
