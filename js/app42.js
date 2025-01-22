@@ -322,12 +322,7 @@ const skillsReference = [
   "wisdom",
 ];
 
-const noDexArmor = [
-  "ring_mail", 
-  "chain_mail", 
-  "splint", 
-  "plate"
-];
+const noDexArmor = ["ring_mail", "chain_mail", "splint", "plate"];
 
 // Create hashmap for skills
 const skillsMap = {};
@@ -1556,8 +1551,6 @@ function parseCharacter(inputChar) {
   //    '\t\t\t</racelink>\n\t\t<raceversion type="string">2024</raceversion>\n';
   //}
 
-  
-
   // Get starting class ID
   $.each(
     character.classes,
@@ -1881,8 +1874,6 @@ function parseCharacter(inputChar) {
   buildXML +=
     '\t\t\t<total type="number">' + parseInt(walkSpeed) + "</total>\n";
   buildXML += "\t\t</speed>\n";
-
-  
 
   /* * * * Start of Weaponlist * * * */
   buildXML += "\t\t<weaponlist>\n";
@@ -2840,71 +2831,73 @@ function parseCharacter(inputChar) {
   /* * * * End of Inventory * * * */
 
   buildXML += "\t\t<defenses>\n";
-    buildXML += "\t\t\t<ac>\n";
-    if (baseAC == 0) {
-      baseAC += 10;
-    }
-    buildXML += '\t\t\t\t<armor type="number">' + (baseAC - 10) + "</armor>\n";
-    if (mamFeat == 1) {
-      dexterityModifier = 3;
-    }
-    var npcdexterityModifier = dexterityModifier;
-    switch (dexterityModifier) {
-      case 0:
-        buildXML += '\t\t\t\t<dexterityModifier type="string">no</dexterityModifier>\n';
-        npcdexterityModifier = 0;
-        break;
-      case 2:
-        buildXML += '\t\t\t\t<dexterityModifier type="string">max2</dexterityModifier>\n';
-        if (npcdexterityModifier >= 2) {
-          npcdexterityModifier = 2;
-        }
-        break;
-      case 3:
-        buildXML += '\t\t\t\t<dexterityModifier type="string">max3</dexterityModifier>\n';
-        if (npcdexterityModifier >= 3) {
-          npcdexterityModifier = 3;
-        }
-        break;
-    }
-    if (isSorcerer == 1 && wearingArmor == 0 && usingShield == 0) {
+  buildXML += "\t\t\t<ac>\n";
+  if (baseAC == 0) {
+    baseAC += 10;
+  }
+  buildXML += '\t\t\t\t<armor type="number">' + (baseAC - 10) + "</armor>\n";
+  if (mamFeat == 1) {
+    dexterityModifier = 3;
+  }
+  var npcdexterityModifier = dexterityModifier;
+  switch (dexterityModifier) {
+    case 0:
       buildXML +=
-        '\t\t\t\t<misc type="number">' + (3 + addBonusOtherAC) + "</misc>\n";
-      npcdexterityModifier += 3 + addBonusOtherAC;
-    } else {
+        '\t\t\t\t<dexterityModifier type="string">no</dexterityModifier>\n';
+      npcdexterityModifier = 0;
+      break;
+    case 2:
       buildXML +=
-        '\t\t\t\t<misc type="number">' +
-        (addBonusArmorAC + addBonusOtherAC) +
-        "</misc>\n";
-      npcdexterityModifier += addBonusArmorAC + addBonusOtherAC;
-    }
-    if (armDis == 1 && mamFeat == 0) {
-      buildXML += '\t\t\t\t<disstealth type="number">1</disstealth>\n';
-    }
-    if (isMonk == 1 && wearingArmor == 0 && usingShield == 0) {
-      buildXML += '\t\t\t\t<stat2 type="string">wisdom</stat2>\n';
-    }
-    if (isBarbarian == 1 && wearingArmor == 0) {
-      buildXML += '\t\t\t\t<stat2 type="string">constitution</stat2>\n';
-    }
-    if (armShieldProf < 0) {
-      buildXML += '\t\t\t\t<prof type="number">0</prof>\n';
-    } else {
-      buildXML += '\t\t\t\t<prof type="number">1</prof>\n';
-    }
-    if (shieldYes == 1) {
-      buildXML += '\t\t\t\t<shield type="number">' + shieldAC + "</shield>\n";
-      npcdexterityModifier += 1;
-    }
-
-    buildXML += '\t\t\t\t<temporary type="number">0</temporary>\n';
-    buildXML += "\t\t\t</ac>\n";
-
-    // Start Insert special defenses here
+        '\t\t\t\t<dexterityModifier type="string">max2</dexterityModifier>\n';
+      if (npcdexterityModifier >= 2) {
+        npcdexterityModifier = 2;
+      }
+      break;
+    case 3:
+      buildXML +=
+        '\t\t\t\t<dexterityModifier type="string">max3</dexterityModifier>\n';
+      if (npcdexterityModifier >= 3) {
+        npcdexterityModifier = 3;
+      }
+      break;
+  }
+  if (isSorcerer == 1 && wearingArmor == 0 && usingShield == 0) {
     buildXML +=
-      '\t\t\t<special type="string">' + specialDefense + "</special>\n";
-    // End Insert special defenses here
-    buildXML += "\t\t</defenses>\n";
+      '\t\t\t\t<misc type="number">' + (3 + addBonusOtherAC) + "</misc>\n";
+    npcdexterityModifier += 3 + addBonusOtherAC;
+  } else {
+    buildXML +=
+      '\t\t\t\t<misc type="number">' +
+      (addBonusArmorAC + addBonusOtherAC) +
+      "</misc>\n";
+    npcdexterityModifier += addBonusArmorAC + addBonusOtherAC;
+  }
+  if (armDis == 1 && mamFeat == 0) {
+    buildXML += '\t\t\t\t<disstealth type="number">1</disstealth>\n';
+  }
+  if (isMonk == 1 && wearingArmor == 0 && usingShield == 0) {
+    buildXML += '\t\t\t\t<stat2 type="string">wisdom</stat2>\n';
+  }
+  if (isBarbarian == 1 && wearingArmor == 0) {
+    buildXML += '\t\t\t\t<stat2 type="string">constitution</stat2>\n';
+  }
+  if (armShieldProf < 0) {
+    buildXML += '\t\t\t\t<prof type="number">0</prof>\n';
+  } else {
+    buildXML += '\t\t\t\t<prof type="number">1</prof>\n';
+  }
+  if (shieldYes == 1) {
+    buildXML += '\t\t\t\t<shield type="number">' + shieldAC + "</shield>\n";
+    npcdexterityModifier += 1;
+  }
+
+  buildXML += '\t\t\t\t<temporary type="number">0</temporary>\n';
+  buildXML += "\t\t\t</ac>\n";
+
+  // Start Insert special defenses here
+  buildXML += '\t\t\t<special type="string">' + specialDefense + "</special>\n";
+  // End Insert special defenses here
+  buildXML += "\t\t</defenses>\n";
 
   allXML = startXML + buildXML + endXML;
   const parser = new DOMParser();
